@@ -11,8 +11,6 @@ import {
   CardFooter
 } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Label } from '@/components/ui/label';
-import { Input } from '@/components/ui/input';
 import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 import { ArrowRight, KeyRound } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
@@ -20,15 +18,15 @@ import { useAuth } from '@/hooks/use-auth';
 const VerifyOtp = () => {
   const [otp, setOtp] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const { userEmail, verifyOtp, isLoading } = useAuth();
+  const { userContactValue, userContactType, verifyOtp, isLoading } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    // If no email is set, redirect to login
-    if (!userEmail) {
+    // If no contact value is set, redirect to login
+    if (!userContactValue) {
       navigate('/login');
     }
-  }, [userEmail, navigate]);
+  }, [userContactValue, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -38,9 +36,21 @@ const VerifyOtp = () => {
     
     setIsSubmitting(true);
     try {
-      await verifyOtp(userEmail, otp);
+      await verifyOtp(userContactValue, otp);
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  // Format the contactValue for display
+  const formatContact = () => {
+    if (!userContactValue) return '';
+    
+    if (userContactType === 'email') {
+      return userContactValue;
+    } else {
+      // Basic phone number masking - show only last 4 digits
+      return '******' + userContactValue.slice(-4);
     }
   };
 
@@ -52,9 +62,9 @@ const VerifyOtp = () => {
         <div className="w-full max-w-md">
           <Card className="w-full">
             <CardHeader>
-              <CardTitle>Verify Your Email</CardTitle>
+              <CardTitle>Verify Your {userContactType === 'email' ? 'Email' : 'Phone'}</CardTitle>
               <CardDescription>
-                Enter the 6-digit code sent to {userEmail || 'your email'}
+                Enter the 6-digit code sent to {formatContact()}
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
@@ -65,9 +75,9 @@ const VerifyOtp = () => {
                       <KeyRound className="h-10 w-10 text-primary" />
                     </div>
                     <div className="w-full flex flex-col space-y-4">
-                      <Label htmlFor="otp" className="text-center">
+                      <div className="text-center font-medium">
                         Verification Code
-                      </Label>
+                      </div>
                       <InputOTP 
                         maxLength={6} 
                         value={otp} 

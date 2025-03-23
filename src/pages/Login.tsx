@@ -13,23 +13,40 @@ import {
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Mail, ArrowRight } from 'lucide-react';
+import { 
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Mail, Phone, ArrowRight } from 'lucide-react';
 import { useAuth } from '@/hooks/use-auth';
 
 const Login = () => {
-  const [email, setEmail] = useState('');
+  const [contactType, setContactType] = useState<'email' | 'phone'>('email');
+  const [contactValue, setContactValue] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { login, isLoading } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!email.trim() || !email.includes('@')) {
+    if (!contactValue.trim()) {
+      return;
+    }
+    
+    // Validate based on type
+    if (contactType === 'email' && !contactValue.includes('@')) {
+      return;
+    }
+    
+    if (contactType === 'phone' && !/^\d{10,15}$/.test(contactValue)) {
       return;
     }
     
     setIsSubmitting(true);
     try {
-      await login(email);
+      await login(contactValue, contactType);
     } finally {
       setIsSubmitting(false);
     }
@@ -45,26 +62,51 @@ const Login = () => {
             <CardHeader>
               <CardTitle>Login</CardTitle>
               <CardDescription>
-                Enter your email to receive a one-time code
+                Enter your email or phone number to receive a one-time code
               </CardDescription>
             </CardHeader>
             <form onSubmit={handleSubmit}>
               <CardContent>
                 <div className="grid w-full items-center gap-4">
                   <div className="flex flex-col space-y-1.5">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="contactType">Login Method</Label>
+                    <Select
+                      value={contactType}
+                      onValueChange={(value) => {
+                        setContactType(value as 'email' | 'phone');
+                        setContactValue(''); // Reset value when changing type
+                      }}
+                    >
+                      <SelectTrigger id="contactType">
+                        <SelectValue placeholder="Select login method" />
+                      </SelectTrigger>
+                      <SelectContent position="popper">
+                        <SelectItem value="email">Email</SelectItem>
+                        <SelectItem value="phone">Phone Number</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  
+                  <div className="flex flex-col space-y-1.5">
+                    <Label htmlFor="contactValue">
+                      {contactType === 'email' ? 'Email' : 'Phone Number'}
+                    </Label>
                     <div className="relative">
                       <span className="absolute left-3 top-2.5 text-muted-foreground">
-                        <Mail className="h-5 w-5" />
+                        {contactType === 'email' ? (
+                          <Mail className="h-5 w-5" />
+                        ) : (
+                          <Phone className="h-5 w-5" />
+                        )}
                       </span>
                       <Input
-                        id="email"
-                        placeholder="you@example.com"
-                        type="email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
+                        id="contactValue"
+                        placeholder={contactType === 'email' ? 'you@example.com' : '(123) 456-7890'}
+                        type={contactType === 'email' ? 'email' : 'tel'}
+                        value={contactValue}
+                        onChange={(e) => setContactValue(e.target.value)}
                         className="pl-10"
-                        autoComplete="email"
+                        autoComplete={contactType === 'email' ? 'email' : 'tel'}
                         required
                       />
                     </div>
@@ -77,7 +119,12 @@ const Login = () => {
                 </Link>
                 <Button 
                   type="submit" 
-                  disabled={isSubmitting || isLoading || !email.includes('@')}
+                  disabled={
+                    isSubmitting || 
+                    isLoading || 
+                    (contactType === 'email' && !contactValue.includes('@')) ||
+                    (contactType === 'phone' && !/^\d{10,15}$/.test(contactValue))
+                  }
                 >
                   Continue
                   <ArrowRight className="ml-2 h-4 w-4" />

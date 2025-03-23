@@ -3,10 +3,14 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from "@/hooks/use-toast";
 
+// Define contact type
+type ContactType = 'email' | 'phone';
+
 // Define user type
 type User = {
   id: string;
-  email: string;
+  email?: string;
+  phone?: string;
   name?: string;
 };
 
@@ -15,11 +19,13 @@ type AuthContextType = {
   user: User | null;
   isAuthenticated: boolean;
   isLoading: boolean;
-  login: (email: string) => Promise<void>;
+  login: (contactValue: string, contactType: ContactType) => Promise<void>;
   logout: () => void;
-  verifyOtp: (email: string, otp: string) => Promise<boolean>;
-  userEmail: string;
-  setUserEmail: (email: string) => void;
+  verifyOtp: (contactValue: string, otp: string) => Promise<boolean>;
+  userContactValue: string;
+  userContactType: ContactType;
+  setUserContactValue: (value: string) => void;
+  setUserContactType: (type: ContactType) => void;
 };
 
 // Create auth context
@@ -31,7 +37,8 @@ const USER_STORAGE_KEY = 'calorimetrics_user';
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const [userEmail, setUserEmail] = useState<string>('');
+  const [userContactValue, setUserContactValue] = useState<string>('');
+  const [userContactType, setUserContactType] = useState<ContactType>('email');
   const { toast } = useToast();
   const navigate = useNavigate();
 
@@ -50,28 +57,30 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   // Mock login function - in a real app, this would call an API
-  const login = async (email: string) => {
+  const login = async (contactValue: string, contactType: ContactType) => {
     setIsLoading(true);
     try {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
-      setUserEmail(email);
+      setUserContactValue(contactValue);
+      setUserContactType(contactType);
       
       // Generate a random 6-digit OTP
       const otp = Math.floor(100000 + Math.random() * 900000).toString();
-      // In a real app, this would send the OTP to the user's email
-      console.log(`OTP for ${email}: ${otp}`);
+      
+      // In a real app, this would send the OTP to the user's email or phone
+      console.log(`OTP for ${contactType}: ${contactValue}: ${otp}`);
       
       // Store OTP in localStorage temporarily (in a real app, this would be on the server)
-      localStorage.setItem(`otp_${email}`, otp);
+      localStorage.setItem(`otp_${contactValue}`, otp);
       
       // Navigate to OTP verification page
       navigate('/verify-otp');
       
       toast({
         title: "OTP Sent",
-        description: `A verification code has been sent to ${email}. In this demo, check the console for the OTP.`,
+        description: `A verification code has been sent to your ${contactType}. In this demo, check the console for the OTP.`,
       });
     } catch (error) {
       console.error('Login error:', error);
@@ -86,21 +95,27 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   // Mock OTP verification
-  const verifyOtp = async (email: string, otp: string): Promise<boolean> => {
+  const verifyOtp = async (contactValue: string, otp: string): Promise<boolean> => {
     setIsLoading(true);
     try {
       // Simulate API call delay
       await new Promise(resolve => setTimeout(resolve, 1000));
       
       // Get stored OTP from localStorage
-      const storedOtp = localStorage.getItem(`otp_${email}`);
+      const storedOtp = localStorage.getItem(`otp_${contactValue}`);
       
       if (otp === storedOtp) {
-        // Create a user object
+        // Create a user object based on contact type
         const newUser: User = {
           id: crypto.randomUUID(),
-          email: email,
         };
+        
+        // Set the appropriate contact field
+        if (userContactType === 'email') {
+          newUser.email = contactValue;
+        } else {
+          newUser.phone = contactValue;
+        }
         
         // Store user in localStorage
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
@@ -109,7 +124,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(newUser);
         
         // Clean up the OTP
-        localStorage.removeItem(`otp_${email}`);
+        localStorage.removeItem(`otp_${contactValue}`);
         
         toast({
           title: "Login Successful",
@@ -159,8 +174,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         login,
         logout,
         verifyOtp,
-        userEmail,
-        setUserEmail,
+        userContactValue,
+        userContactType,
+        setUserContactValue,
+        setUserContactType,
       }}
     >
       {children}
