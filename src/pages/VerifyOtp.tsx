@@ -47,10 +47,17 @@ const VerifyOtp = () => {
     if (!userContactValue) return '';
     
     if (userContactType === 'email') {
+      // Basic email masking - show first character, then asterisks, then domain
+      const [username, domain] = userContactValue.split('@');
+      if (username && domain) {
+        return `${username.charAt(0)}${'*'.repeat(username.length - 1)}@${domain}`;
+      }
       return userContactValue;
     } else {
-      // Basic phone number masking - show only last 4 digits
-      return '******' + userContactValue.slice(-4);
+      // Show only country code and last 4 digits
+      const lastFour = userContactValue.slice(-4);
+      const countryCode = userContactValue.replace(/[0-9]/g, '');
+      return `${countryCode}****${lastFour}`;
     }
   };
 
