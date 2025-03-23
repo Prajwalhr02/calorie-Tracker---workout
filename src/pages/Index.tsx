@@ -1,7 +1,7 @@
 
 import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { Activity, ArrowRight, Dumbbell, Apple, ChartLineUp, Shield } from 'lucide-react';
+import { Activity, ArrowRight, Dumbbell, Apple, ChartLine, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Navbar } from '@/components/ui/Navbar';
 import { Footer } from '@/components/ui/Footer';
@@ -119,7 +119,7 @@ export default function Index() {
                 {
                   title: 'Progress Visualization',
                   description: 'See your progress over time with beautiful charts and actionable insights.',
-                  icon: <ChartLineUp className="h-6 w-6" />,
+                  icon: <ChartLine className="h-6 w-6" />,
                   color: 'bg-purple-50 text-purple-600 dark:bg-purple-950 dark:text-purple-400'
                 },
                 {

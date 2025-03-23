@@ -6,7 +6,7 @@ import {
   Dumbbell, 
   Home, 
   Apple, 
-  ChartLineUp, 
+  ChartLine, 
   User,
   Menu,
   X
@@ -40,7 +40,7 @@ export function Navbar() {
     { path: '/dashboard', label: 'Dashboard', icon: <Activity className="w-5 h-5" /> },
     { path: '/workouts', label: 'Workouts', icon: <Dumbbell className="w-5 h-5" /> },
     { path: '/nutrition', label: 'Nutrition', icon: <Apple className="w-5 h-5" /> },
-    { path: '/progress', label: 'Progress', icon: <ChartLineUp className="w-5 h-5" /> },
+    { path: '/progress', label: 'Progress', icon: <ChartLine className="w-5 h-5" /> },
     { path: '/profile', label: 'Profile', icon: <User className="w-5 h-5" /> },
   ];
 
