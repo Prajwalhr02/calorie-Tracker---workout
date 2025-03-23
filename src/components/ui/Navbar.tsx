@@ -9,14 +9,17 @@ import {
   ChartLine, 
   User,
   Menu,
-  X
+  X,
+  CircleDot
 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import { useTracking } from '@/hooks/use-tracking';
 
 export function Navbar() {
   const location = useLocation();
   const isMobile = useIsMobile();
+  const { isActiveTracking } = useTracking();
   const [isScrolled, setIsScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   
@@ -77,6 +80,12 @@ export function Navbar() {
             <Activity className="h-5 w-5 text-white" />
           </div>
           <span className="text-xl font-semibold">Calorimetrics</span>
+          {isActiveTracking && (
+            <div className="flex items-center ml-2">
+              <CircleDot className="h-4 w-4 text-green-500 animate-pulse" />
+              <span className="text-xs text-green-500 ml-1">Live tracking</span>
+            </div>
+          )}
         </NavLink>
         
         {isMobile ? (

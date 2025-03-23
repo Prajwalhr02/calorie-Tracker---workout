@@ -1,12 +1,13 @@
 
 import { useState } from 'react';
-import { Camera, Plus, Search, X, BarChart3 } from 'lucide-react';
+import { Camera, Plus, Search, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import { toast } from 'sonner';
+import { useTracking } from '@/hooks/use-tracking';
 
 interface FoodItem {
   id: string;
@@ -29,6 +30,7 @@ export function MealTracker({
 }: MealTrackerProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedMeal, setSelectedMeal] = useState('breakfast');
+  const { isActiveTracking, trackCalories } = useTracking();
   
   const meals = [
     { id: 'breakfast', label: 'Breakfast', icon: null },
@@ -43,12 +45,19 @@ export function MealTracker({
     { id: '3', name: 'Brown Rice', calories: 215, protein: 5, carbs: 45, fat: 1.8, portion: '1 cup cooked' },
     { id: '4', name: 'Salmon', calories: 206, protein: 22, carbs: 0, fat: 13, portion: '100g' },
     { id: '5', name: 'Greek Yogurt', calories: 100, protein: 17, carbs: 6, fat: 0.4, portion: '170g' },
+    { id: '6', name: 'Avocado', calories: 240, protein: 3, carbs: 12, fat: 22, portion: '1 medium' },
+    { id: '7', name: 'Almonds', calories: 164, protein: 6, carbs: 6, fat: 14, portion: '28g' },
+    { id: '8', name: 'Oatmeal', calories: 150, protein: 5, carbs: 27, fat: 3, portion: '1 cup cooked' },
   ];
   
   const handleAddFood = (food: FoodItem) => {
-    toast(`Added ${food.name} to ${selectedMeal}`, {
-      description: `${food.calories} calories added to your daily intake.`,
-    });
+    if (isActiveTracking) {
+      trackCalories(food.calories);
+    } else {
+      toast(`Added ${food.name} to ${selectedMeal}`, {
+        description: `${food.calories} calories added to your daily intake.`,
+      });
+    }
   };
   
   const handleCameraCapture = () => {
@@ -179,6 +188,7 @@ export function MealTracker({
                           variant="ghost" 
                           size="icon"
                           onClick={() => handleAddFood(food)}
+                          className={isActiveTracking ? "text-green-500 hover:text-green-600 hover:bg-green-50 dark:hover:bg-green-950/20" : ""}
                         >
                           <Plus className="h-4 w-4" />
                         </Button>
